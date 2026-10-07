@@ -2,6 +2,10 @@
 
 B2B 保健食品代工與包裝盒／標籤的成本估算與報價單草稿生成工具。單一 HTML 檔，不需安裝，用瀏覽器打開 `index.html` 即可使用。
 
+**線上試用：** https://shengge820.github.io/supplement-oem-quote/
+
+設計相關文件：[DESIGN.md](DESIGN.md)（設計語言）、[DESIGN-REVIEW.md](DESIGN-REVIEW.md)（五階段設計審查）
+
 ## 工作情境
 
 | 項目 | 說明 |
