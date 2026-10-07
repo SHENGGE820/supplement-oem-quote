@@ -11,13 +11,15 @@
 :root{
   /* Layout: 工作台 — 左側輸入規格、右側即時報價（桌機固定）；報價單分頁 = 紙本報價單 + 內部溝通重點 */
   --bg:#eef2f1; --surface:#ffffff; --surface-2:#f5f8f7;
-  --ink:#122629; --ink-2:#3b5153; --muted:#647879;
-  --line:#d5dedc; --line-strong:#aebebc;
+  --ink:#122629; --ink-2:#3b5153; --muted:#566a6b;
+  --line:#d5dedc; --line-strong:#aebebc; --field-line:#7d918f;
   --accent:#0b6b66; --accent-ink:#ffffff; --accent-soft:#ddeeea;
   --gold:#8a5d08; --gold-line:#d29b2e; --gold-soft:#f8eed8;
   --warn:#8f5300; --warn-soft:#fcefd8; --crit:#b3261e; --crit-soft:#fbe5e3; --ok:#1d6b3a; --ok-soft:#e0f1e6;
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
   --shadow:0 1px 2px rgba(18,38,41,.06),0 10px 28px rgba(18,38,41,.07);
+  --shadow-up:0 -6px 20px rgba(18,38,41,.10);
+  --del:34px;
   --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
   --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
@@ -26,24 +28,24 @@
   :root:not([data-theme="light"]){
     --bg:#0c1515; --surface:#132022; --surface-2:#182a2c;
     --ink:#e2ecea; --ink-2:#b5c7c4; --muted:#8b9f9d;
-    --line:#27393b; --line-strong:#3b5251;
+    --line:#27393b; --line-strong:#3b5251; --field-line:#5d7876;
     --accent:#45b8ae; --accent-ink:#04201d; --accent-soft:#143633;
     --gold:#e3b456; --gold-line:#b8892c; --gold-soft:#30270f;
     --warn:#eaa53f; --warn-soft:#3a2a10; --crit:#f07a70; --crit-soft:#3d1816; --ok:#62c482; --ok-soft:#12301d;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); --shadow-up:0 -6px 20px rgba(0,0,0,.4);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0c1515; --surface:#132022; --surface-2:#182a2c;
   --ink:#e2ecea; --ink-2:#b5c7c4; --muted:#8b9f9d;
-  --line:#27393b; --line-strong:#3b5251;
+  --line:#27393b; --line-strong:#3b5251; --field-line:#5d7876;
   --accent:#45b8ae; --accent-ink:#04201d; --accent-soft:#143633;
   --gold:#e3b456; --gold-line:#b8892c; --gold-soft:#30270f;
   --warn:#eaa53f; --warn-soft:#3a2a10; --crit:#f07a70; --crit-soft:#3d1816; --ok:#62c482; --ok-soft:#12301d;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); --shadow-up:0 -6px 20px rgba(0,0,0,.4);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -95,10 +97,12 @@ legend .hint{font-size:12px;font-weight:400;color:var(--muted);margin-left:auto}
 .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px 14px}
 .field{min-width:0}
 .field > label,.lbl{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-bottom:4px}
-input[type="text"],input[type="number"],select{width:100%;min-height:36px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:14px}
+input[type="text"],input[type="number"],select{width:100%;min-height:36px;background:var(--surface-2);border:1px solid var(--field-line);border-radius:6px;padding:6px 10px;font-size:14px}
 input[type="number"]{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 input[type="text"]:focus,input[type="number"]:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;background:var(--surface)}
 select:disabled{opacity:.45}
+input[aria-invalid="true"]{border-color:var(--crit);outline-color:var(--crit)}
+.err{margin:4px 0 0;font-size:12.5px;line-height:1.4;color:var(--crit)}
 .with-unit{display:flex;align-items:center;gap:8px}
 .with-unit span{font-size:13px;color:var(--ink-2);white-space:nowrap}
 
@@ -114,17 +118,17 @@ select:disabled{opacity:.45}
 .form-opt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 
 /* formula */
-.frow,.frow-head{display:grid;grid-template-columns:minmax(0,1fr) 104px 104px 34px;gap:8px;align-items:center}
+.frow,.frow-head{display:grid;grid-template-columns:minmax(0,1fr) 104px 104px var(--del);gap:8px;align-items:center}
 .frow-head{font-size:12px;color:var(--muted);font-weight:500}
 .frow-head span:nth-child(3){text-align:right}
 #frows{display:grid;gap:8px}
 .fcost{font-family:var(--f-mono);font-size:12.5px;text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
-.fdel{width:34px;height:34px;border:1px solid var(--line);background:var(--surface);border-radius:6px;color:var(--muted);cursor:pointer;font-size:17px;line-height:1}
+.fdel{width:var(--del);height:var(--del);border:1px solid var(--field-line);background:var(--surface);border-radius:6px;color:var(--muted);cursor:pointer;font-size:17px;line-height:1}
 .fdel:hover{color:var(--crit);border-color:var(--crit)}
 .add-row{justify-self:start;border:1px dashed var(--line-strong);background:none;border-radius:6px;padding:6px 14px;color:var(--accent);font-weight:500;cursor:pointer}
 .add-row:hover{border-color:var(--accent);background:var(--accent-soft)}
 @media (max-width:540px){
-  .frow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px}
+  .frow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) var(--del)}
   .frow .fsel{grid-column:1 / -1}
   .frow-head{display:none}
 }
@@ -284,6 +288,23 @@ select:disabled{opacity:.45}
 .db-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:16px}
 .db-grid .dbt{min-width:280px}
 
+/* 手機底部摘要列 */
+.mbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--line-strong);box-shadow:var(--shadow-up)}
+.mbar-txt{min-width:0;display:grid;font-size:12.5px;color:var(--ink-2);line-height:1.35}
+.mbar-txt b{font-family:var(--f-mono);font-size:18px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.mbar .btn{flex:none}
+@media (min-width:1000px){.mbar{display:none}}
+@media (max-width:999px){.app.has-mbar{padding-bottom:96px}}
+
+/* 觸控裝置與窄螢幕：44px 觸控目標、16px 輸入字級（避免 iOS 聚焦時放大畫面） */
+@media (pointer: coarse), (max-width: 640px){
+  :root{--del:44px}
+  input[type="text"],input[type="number"],select{font-size:16px;min-height:44px}
+  .chip,.chk,.btn,.add-row,.tabs button{min-height:44px}
+  .form-opt{min-height:52px}
+  .dbt input{min-height:44px}
+}
+
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 @media print{
   :root:not(#_p){--bg:#fff;--surface:#fff;--surface-2:#f2f2f2;--ink:#111;--ink-2:#333;--muted:#555;--line:#ccc;--line-strong:#999;--gold:#7a5200;--gold-line:#c9952c;--gold-soft:#f6efe0;color-scheme:light}
@@ -345,7 +366,8 @@ select:disabled{opacity:.45}
               <div class="fields">
                 <div class="field">
                   <label for="perBox">每盒入數</label>
-                  <div class="with-unit"><input type="number" id="perBox" min="1" step="1"><span id="perBoxUnit">粒</span></div>
+                  <div class="with-unit"><input type="number" id="perBox" min="1" max="1000" step="1" aria-describedby="perBox-err"><span id="perBoxUnit">粒</span></div>
+                  <p class="err" id="perBox-err" hidden></p>
                 </div>
                 <div class="field"><label for="inner">內包裝</label><select id="inner"></select></div>
               </div>
@@ -380,10 +402,11 @@ select:disabled{opacity:.45}
             <legend><span class="step">4</span>數量方案與條件</legend>
             <div class="fs-body">
               <div class="fields">
-                <div class="field"><label for="tier0">方案 A（盒）</label><input type="number" id="tier0" min="100" step="500"></div>
-                <div class="field"><label for="tier1">方案 B（盒）</label><input type="number" id="tier1" min="100" step="500"></div>
-                <div class="field"><label for="tier2">方案 C（盒）</label><input type="number" id="tier2" min="100" step="500"></div>
+                <div class="field"><label for="tier0">方案 A（盒）</label><input type="number" id="tier0" min="100" step="500" aria-describedby="tier0-err"><p class="err" id="tier0-err" hidden></p></div>
+                <div class="field"><label for="tier1">方案 B（盒）</label><input type="number" id="tier1" min="100" step="500" aria-describedby="tier1-err"><p class="err" id="tier1-err" hidden></p></div>
+                <div class="field"><label for="tier2">方案 C（盒）</label><input type="number" id="tier2" min="100" step="500" aria-describedby="tier2-err"><p class="err" id="tier2-err" hidden></p></div>
               </div>
+              <p class="muted" style="margin:-4px 0 0;font-size:12.5px">數量需由少到多，最少 100 盒。</p>
               <div class="fields">
                 <div class="field"><label for="test">品質檢驗</label><select id="test"></select></div>
                 <div class="field"><label for="loss">製程損耗率（%）</label><input type="number" id="loss" min="0" max="20" step="0.5"></div>
@@ -451,6 +474,11 @@ select:disabled{opacity:.45}
       <div class="db-grid" id="dbGrid"></div>
     </section>
   </main>
+
+  <div class="mbar" id="mbar" hidden>
+    <div class="mbar-txt"><span id="mbarLbl">建議方案</span><b id="mbarPrice">NT$0／盒</b></div>
+    <button type="button" class="btn primary" id="mbarBtn">查看三個方案</button>
+  </div>
 </div>
 
 <script>
@@ -632,8 +660,8 @@ function compute(s, Q){
           cost, price, perUnit:price / N, subtotal, tax, grand:subtotal + tax, profit:(price - cost) * Q,
           reorderPrice, mfgTier:mt, printTier:pt};
 }
-const sortedTiers = s => s.tiers.map(q => Math.max(100, Math.round(+q) || 0)).sort((a,b) => a - b);
-const computeAll = s => sortedTiers(s).map(Q => compute(s, Q));
+// state.tiers 只存通過驗證的數量（整數、≥100、由少到多），A／B／C 固定對應三個輸入欄
+const computeAll = s => s.tiers.map(Q => compute(s, Q));
 function pickRec(R){
   // 往上加量若每盒還能再省 10% 以上就繼續往上推；省不到 10% 的那一階就是甜蜜點
   let i = 0;
@@ -648,7 +676,7 @@ function leadDays(s){
 /* ---------------- 表單 ---------------- */
 const SIMPLE = {
   client:'text', contact:'text', product:'text', ourCompany:'text', salesRep:'text',
-  perBox:'num', inner:'sel', boxType:'sel', boxSize:'sel', paper:'sel', print:'sel', lam:'sel', label:'sel',
+  inner:'sel', boxType:'sel', boxSize:'sel', paper:'sel', print:'sel', lam:'sel', label:'sel',
   test:'sel', loss:'num', margin:'num',
 };
 
@@ -672,7 +700,9 @@ function fillForm(){
   const f = FORMS[state.form];
   $('#inner').innerHTML = f.inner.map(k => `<option value="${k}">${esc(k === 'none' ? `${f.packName}（含於代工費）` : INNER[k].name)}</option>`).join('');
   for (const id of Object.keys(SIMPLE)) $('#' + id).value = state[id];
+  $('#perBox').value = state.perBox;
   state.tiers.forEach((q,i) => { $('#tier' + i).value = q; });
+  ['perBox','tier0','tier1','tier2'].forEach(id => showErr(id, ''));
   document.querySelectorAll('#formPick input').forEach(r => { r.checked = r.value === state.form; });
   document.querySelectorAll('#specials input').forEach(c => { c.checked = state.specials.includes(c.value); });
   document.querySelectorAll('#presets .chip').forEach(b => b.classList.toggle('on', b.dataset.preset === state.preset));
@@ -693,6 +723,28 @@ function renderFormula(){
     </div>`).join('');
 }
 
+function showErr(id, msg){
+  const el = $('#' + id), err = $('#' + id + '-err');
+  if (msg) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
+  err.textContent = msg; err.hidden = !msg;
+}
+function isWhole(raw){ const v = Number(raw); return raw !== '' && Number.isInteger(v); }
+function perBoxError(raw){
+  if (!isWhole(raw)) return '請輸入整數';
+  const v = Number(raw);
+  if (v < 1) return '至少 1';
+  if (v > 1000) return '每盒最多 1,000';
+  return '';
+}
+function tierError(i, raw){
+  if (!isWhole(raw)) return '請輸入整數盒數';
+  const v = Number(raw), t = state.tiers;
+  if (v < 100) return '最少 100 盒';
+  if (i > 0 && v <= t[i-1]) return `需多於方案 ${LET[i-1]}（${fmt(t[i-1])} 盒）`;
+  if (i < t.length - 1 && v >= t[i+1]) return `需少於方案 ${LET[i+1]}（${fmt(t[i+1])} 盒）`;
+  return '';
+}
+
 function bindForm(){
   for (const [id, type] of Object.entries(SIMPLE)){
     $('#' + id).addEventListener(type === 'sel' ? 'change' : 'input', e => {
@@ -700,7 +752,20 @@ function bindForm(){
       update();
     });
   }
-  [0,1,2].forEach(i => $('#tier' + i).addEventListener('input', e => { state.tiers[i] = parseFloat(e.target.value) || 0; update(); }));
+  // 數量欄：輸入合法就即時重算；離開欄位時若仍不合法，在欄位下方說明原因與目前沿用的數字
+  const bindChecked = (id, check, apply, current) => {
+    const el = $('#' + id);
+    el.addEventListener('input', () => {
+      if (check(el.value.trim())) return;
+      apply(Number(el.value)); showErr(id, ''); update();
+    });
+    el.addEventListener('change', () => {
+      const msg = check(el.value.trim());
+      showErr(id, msg ? `${msg}，目前仍以 ${current()}試算` : '');
+    });
+  };
+  bindChecked('perBox', perBoxError, v => { state.perBox = v; }, () => `${fmt(state.perBox)} ${FORMS[state.form].unit}／盒`);
+  [0,1,2].forEach(i => bindChecked('tier' + i, raw => tierError(i, raw), v => { state.tiers[i] = v; }, () => `${fmt(state.tiers[i])} 盒`));
   $('#formPick').addEventListener('change', e => {
     const k = e.target.value; const f = FORMS[k];
     state.form = k; state.perBox = f.perBox; state.inner = f.defInner;
@@ -1026,7 +1091,26 @@ function update(){
   renderCalcSide(lastR, lastRec);
   renderQuote(lastR, lastRec);
   renderInternal(lastR, lastRec);
+  const r = lastR[lastRec];
+  $('#mbarLbl').textContent = `建議方案 ${LET[lastRec]}・${fmt(r.Q)} 盒`;
+  $('#mbarPrice').textContent = `NT$${fmt(r.price)}／盒`;
 }
+
+/* ---------------- 手機底部摘要列 ---------------- */
+// 單欄版面時報價結果在表單最下方；結果區不在畫面內時，底部固定顯示建議方案價格
+let onCalc = true, resultsInView = false;
+function syncMbar(){
+  $('#mbar').hidden = !onCalc || resultsInView;
+  document.querySelector('.app').classList.toggle('has-mbar', !$('#mbar').hidden);
+}
+if ('IntersectionObserver' in window){
+  new IntersectionObserver(es => { resultsInView = es[0].isIntersecting; syncMbar(); }, {threshold:0.15})
+    .observe(document.querySelector('.results'));
+}
+const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+$('#mbarBtn').addEventListener('click', () => {
+  document.querySelector('.results').scrollIntoView({behavior: reduceMotion() ? 'auto' : 'smooth', block:'start'});
+});
 
 /* ---------------- 計時器 ---------------- */
 let t0 = Date.now(), tDone = null;
@@ -1045,6 +1129,7 @@ setInterval(tick, 1000);
 function selectTab(name){
   document.querySelectorAll('.tabs [role="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
   ['calc','quote','db'].forEach(k => { $('#p-' + k).hidden = k !== name; });
+  onCalc = name === 'calc'; syncMbar();
   if (name === 'quote'){ const p = $('#points'); p.innerHTML = p.innerHTML; }  // 重播溝通重點進場
 }
 document.querySelector('.tabs').addEventListener('click', e => {
