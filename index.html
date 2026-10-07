@@ -1,0 +1,1157 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>保健代工智慧報價</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: 工作台 — 左側輸入規格、右側即時報價（桌機固定）；報價單分頁 = 紙本報價單 + 內部溝通重點 */
+  --bg:#eef2f1; --surface:#ffffff; --surface-2:#f5f8f7;
+  --ink:#122629; --ink-2:#3b5153; --muted:#647879;
+  --line:#d5dedc; --line-strong:#aebebc;
+  --accent:#0b6b66; --accent-ink:#ffffff; --accent-soft:#ddeeea;
+  --gold:#8a5d08; --gold-line:#d29b2e; --gold-soft:#f8eed8;
+  --warn:#8f5300; --warn-soft:#fcefd8; --crit:#b3261e; --crit-soft:#fbe5e3; --ok:#1d6b3a; --ok-soft:#e0f1e6;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
+  --shadow:0 1px 2px rgba(18,38,41,.06),0 10px 28px rgba(18,38,41,.07);
+  --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c1515; --surface:#132022; --surface-2:#182a2c;
+    --ink:#e2ecea; --ink-2:#b5c7c4; --muted:#8b9f9d;
+    --line:#27393b; --line-strong:#3b5251;
+    --accent:#45b8ae; --accent-ink:#04201d; --accent-soft:#143633;
+    --gold:#e3b456; --gold-line:#b8892c; --gold-soft:#30270f;
+    --warn:#eaa53f; --warn-soft:#3a2a10; --crit:#f07a70; --crit-soft:#3d1816; --ok:#62c482; --ok-soft:#12301d;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c1515; --surface:#132022; --surface-2:#182a2c;
+  --ink:#e2ecea; --ink-2:#b5c7c4; --muted:#8b9f9d;
+  --line:#27393b; --line-strong:#3b5251;
+  --accent:#45b8ae; --accent-ink:#04201d; --accent-soft:#143633;
+  --gold:#e3b456; --gold-line:#b8892c; --gold-soft:#30270f;
+  --warn:#eaa53f; --warn-soft:#3a2a10; --crit:#f07a70; --crit-soft:#3d1816; --ok:#62c482; --ok-soft:#12301d;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+.app{max-width:1320px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+@media (min-width:720px){.app{padding-inline:24px}}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+/* top bar */
+.topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;padding-block:20px 14px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.capsule{flex:none;width:36px;height:15px;border-radius:8px;transform:rotate(-32deg);background:linear-gradient(90deg,var(--accent) 50%,var(--gold-line) 50%);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.brand h1{margin:0;font-family:var(--f-display);font-size:22px;font-weight:700;letter-spacing:.03em;text-wrap:balance}
+.brand p{margin:0;font-size:12.5px;color:var(--muted)}
+.timer{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-size:12.5px;color:var(--ink-2)}
+.timer b{font-family:var(--f-mono);font-size:16px;font-weight:600;color:var(--accent);min-width:3.2em;text-align:center}
+.timer .vs{color:var(--muted);border-left:1px solid var(--line);padding-left:10px}
+.timer.done{border-color:var(--ok)}
+.timer.done b{color:var(--ok)}
+
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 16px;font-size:14.5px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.panel{padding-block:16px 0}
+
+/* presets */
+.presets{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.presets > span{font-size:13px;color:var(--muted);margin-right:2px}
+.chip{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:5px 13px;font-size:13px;color:var(--ink-2);cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:500}
+
+/* work layout */
+.work{display:grid;gap:20px;margin-top:14px}
+@media (min-width:1000px){.work{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}}
+.inputs{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin:0}
+fieldset{border:0;margin:0;padding:18px 20px 20px;min-width:0}
+fieldset + fieldset{border-top:1px solid var(--line)}
+legend{float:left;width:100%;padding:0;margin:0 0 14px;font-size:15.5px;font-weight:700;display:flex;align-items:center;gap:10px}
+legend .hint{font-size:12px;font-weight:400;color:var(--muted);margin-left:auto}
+.step{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);font-family:var(--f-mono);font-size:12.5px;font-weight:600}
+.fs-body{clear:both;display:grid;gap:14px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px 14px}
+.field{min-width:0}
+.field > label,.lbl{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-bottom:4px}
+input[type="text"],input[type="number"],select{width:100%;min-height:36px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:14px}
+input[type="number"]{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+input[type="text"]:focus,input[type="number"]:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;background:var(--surface)}
+select:disabled{opacity:.45}
+.with-unit{display:flex;align-items:center;gap:8px}
+.with-unit span{font-size:13px;color:var(--ink-2);white-space:nowrap}
+
+/* dosage form picker */
+.forms{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.form-opt{position:relative;display:grid;gap:1px;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);cursor:pointer}
+.form-opt input{position:absolute;opacity:0;pointer-events:none}
+.form-opt b{font-size:14.5px;font-weight:700}
+.form-opt small{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.form-opt:hover{border-color:var(--line-strong)}
+.form-opt.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.form-opt.on small{color:var(--ink-2)}
+.form-opt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+
+/* formula */
+.frow,.frow-head{display:grid;grid-template-columns:minmax(0,1fr) 104px 104px 34px;gap:8px;align-items:center}
+.frow-head{font-size:12px;color:var(--muted);font-weight:500}
+.frow-head span:nth-child(3){text-align:right}
+#frows{display:grid;gap:8px}
+.fcost{font-family:var(--f-mono);font-size:12.5px;text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.fdel{width:34px;height:34px;border:1px solid var(--line);background:var(--surface);border-radius:6px;color:var(--muted);cursor:pointer;font-size:17px;line-height:1}
+.fdel:hover{color:var(--crit);border-color:var(--crit)}
+.add-row{justify-self:start;border:1px dashed var(--line-strong);background:none;border-radius:6px;padding:6px 14px;color:var(--accent);font-weight:500;cursor:pointer}
+.add-row:hover{border-color:var(--accent);background:var(--accent-soft)}
+@media (max-width:540px){
+  .frow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px}
+  .frow .fsel{grid-column:1 / -1}
+  .frow-head{display:none}
+}
+.fill{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:8px;font-size:13px}
+.fill b{font-family:var(--f-mono);font-weight:600}
+.meter{position:relative;height:10px;border-radius:5px;background:var(--line);display:flex;gap:2px;overflow:hidden}
+.meter span{height:100%}
+.meter .m-a{background:var(--accent)}
+.meter .m-f{background:var(--gold-line)}
+.meter.over .m-a{background:var(--crit)}
+.meter-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
+.meter-key i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* checkbox chips */
+.chks{display:flex;flex-wrap:wrap;gap:8px}
+.chk{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 9px;font-size:13px;cursor:pointer;background:var(--surface)}
+.chk input{accent-color:var(--accent);margin:0}
+.chk.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:500}
+.chk.dis{opacity:.45;pointer-events:none}
+.range-row{display:flex;align-items:center;gap:10px}
+.range-row input{flex:1;accent-color:var(--accent);min-width:0}
+.range-row output{font-family:var(--f-mono);font-weight:600;min-width:3em;text-align:right}
+
+/* results */
+.results{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px 20px;min-width:0}
+@media (min-width:1000px){.results{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}}
+.res-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.res-head h2{margin:0;font-size:16px}
+.res-head span{font-size:12px;color:var(--muted)}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:12px}
+.tier{display:grid;gap:3px;align-content:start;border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+.tier.rec{border-color:var(--gold-line);background:var(--gold-soft)}
+.tier .tq{display:flex;justify-content:space-between;gap:6px;font-size:12.5px;color:var(--ink-2)}
+.tier .badge{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.04em;white-space:nowrap}
+.tier .tp{font-family:var(--f-mono);font-size:23px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
+.tier .tp small{font-size:12px;font-weight:500;color:var(--muted);margin-right:2px}
+.tier .tu{font-size:12px;color:var(--ink-2)}
+.tier .tt{font-size:12px;color:var(--muted);border-top:1px dashed var(--line-strong);padding-top:6px;margin-top:4px;display:grid;gap:1px}
+.tier .tt span{display:flex;justify-content:space-between;gap:6px}
+.tier .tt b{font-family:var(--f-mono);font-weight:500;color:var(--ink-2)}
+
+.chart-block{margin-top:20px}
+.chart-block h3{margin:0;font-size:13.5px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2)}
+.sw{width:10px;height:10px;border-radius:3px;flex:none}
+.plot{position:relative;display:grid;grid-template-columns:78px minmax(0,1fr) 70px;column-gap:10px;row-gap:8px;margin-top:12px}
+.gridov{grid-column:2;grid-row:1 / span 4;position:relative;pointer-events:none}
+.gridov span{position:absolute;top:0;bottom:22px;width:1px;background:var(--line)}
+.bar-label{grid-column:1;font-family:var(--f-mono);font-size:12px;color:var(--ink-2);align-self:center;white-space:nowrap}
+.bar-track{grid-column:2;position:relative;height:20px;z-index:1}
+.bar{display:flex;gap:2px;height:100%}
+.seg{flex-basis:0;min-width:2px;height:100%;cursor:default}
+.seg:last-child{border-radius:0 4px 4px 0}
+.seg:hover{filter:brightness(1.1)}
+.bar-val{grid-column:3;font-family:var(--f-mono);font-size:12px;text-align:right;align-self:center;font-variant-numeric:tabular-nums}
+.axis{grid-column:2;position:relative;height:16px}
+.axis span{position:absolute;transform:translateX(-50%);font-family:var(--f-mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
+.axis-cap{grid-column:3;font-size:10.5px;color:var(--muted);text-align:right}
+.tip{position:absolute;z-index:5;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;line-height:1.45;padding:6px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,calc(-100% - 8px))}
+.tip b{font-family:var(--f-mono)}
+
+.alerts{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:8px}
+.alerts li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;font-size:13px;background:var(--surface-2);border-radius:6px;padding:8px 10px}
+.lvl{font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.lvl.crit{background:var(--crit-soft);color:var(--crit)}
+.lvl.warn{background:var(--warn-soft);color:var(--warn)}
+.lvl.info{background:var(--accent-soft);color:var(--accent)}
+.lvl.ok{background:var(--ok-soft);color:var(--ok)}
+.cta{margin-top:16px;width:100%;background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer}
+.cta:hover{filter:brightness(1.08)}
+
+/* quote tab */
+.quote-tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.done-note{font-size:13px;color:var(--ink-2)}
+.done-note b{font-family:var(--f-mono);color:var(--ok)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:6px;padding:7px 13px;font-size:13.5px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--accent-ink)}
+#copyFallback{width:100%;min-height:120px;margin-top:10px;font-family:var(--f-mono);font-size:12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px}
+.quote-layout{display:grid;gap:20px;margin-top:14px}
+@media (min-width:1120px){.quote-layout{grid-template-columns:minmax(0,1fr) 390px;align-items:start}}
+.paper{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);padding:40px 44px 36px;width:100%;max-width:880px;justify-self:center;min-width:0}
+@media (max-width:640px){.paper{padding:24px 18px}}
+.q-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.q-co{font-family:var(--f-display);font-size:20px;font-weight:700}
+.q-sub{font-size:12px;color:var(--muted)}
+.q-title{text-align:right}
+.q-title span{display:block;font-family:var(--f-display);font-size:30px;font-weight:700;letter-spacing:.42em;margin-right:-.42em;line-height:1.2}
+.q-title small{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.32em;color:var(--muted)}
+.q-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:5px 28px;margin:16px 0 4px;font-size:13.5px}
+.q-meta div{display:grid;grid-template-columns:72px minmax(0,1fr);gap:6px}
+.q-meta dt{color:var(--muted)}
+.q-meta dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.paper h4{font-size:14.5px;margin:24px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.q-spec{width:100%;border-collapse:collapse;font-size:13.5px}
+.q-spec th{text-align:left;width:98px;color:var(--muted);font-weight:500;vertical-align:top;padding:6px 10px 6px 0;white-space:nowrap}
+.q-spec td{padding:6px 0;border-bottom:1px dotted var(--line-strong)}
+.tbl-wrap{overflow-x:auto}
+.q-price{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+.q-price th,.q-price td{border:1px solid var(--line-strong);padding:7px 10px}
+.q-price th{background:var(--surface-2);font-weight:500;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.q-price td.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.q-price tr.rec td{background:var(--gold-soft)}
+.q-price .rb{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--gold);border:1px solid var(--gold-line);border-radius:4px;padding:0 5px}
+.q-note{font-size:12px;color:var(--muted);margin:6px 0 0}
+.q-terms{padding-left:1.5em;margin:0;font-size:13px;color:var(--ink-2);display:grid;gap:3px}
+.q-sign{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:26px}
+.q-sign > div{border:1px solid var(--line-strong);min-height:96px;padding:10px 12px;font-size:13px;color:var(--ink-2)}
+.q-sign .lbl{margin-bottom:6px}
+
+.internal{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;min-width:0}
+@media (min-width:1120px){.internal{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}}
+.internal h2{margin:0;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tag-int{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--crit-soft);color:var(--crit)}
+.internal h3{font-size:13.5px;margin:20px 0 8px}
+#points{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:10px}
+#points li{display:grid;gap:4px;padding-bottom:10px;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.65;animation:rise .35s ease both;animation-delay:calc(var(--i) * 50ms)}
+#points li:last-child{border-bottom:0;padding-bottom:0}
+#points b{font-family:var(--f-mono);font-weight:600}
+@keyframes rise{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
+.ptag{justify-self:start;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:4px}
+.ptag.price{background:var(--accent-soft);color:var(--accent)}
+.ptag.cost{background:var(--surface-2);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.ptag.save{background:var(--ok-soft);color:var(--ok)}
+.ptag.risk{background:var(--warn-soft);color:var(--warn)}
+.ptag.law{background:var(--crit-soft);color:var(--crit)}
+.ctab{width:100%;border-collapse:collapse;font-size:12.5px}
+.ctab th,.ctab td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.ctab th:first-child,.ctab td:first-child{text-align:left}
+.ctab thead th{color:var(--muted);font-weight:500}
+.ctab td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.ctab td:first-child{font-family:var(--f-body)}
+.ctab tr.sum td{font-weight:600;border-top:1px solid var(--line-strong)}
+.ctab .sw{display:inline-block;margin-right:6px;vertical-align:-1px}
+
+/* database tab */
+.db-intro{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.db-intro p{margin:0;font-size:13px;color:var(--muted);max-width:68ch}
+.db-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.db-filters input{width:200px}
+.db-filters select{width:auto}
+.db-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.db-card h3{margin:0 0 10px;font-size:15px;display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.db-card h3 small{font-size:12px;font-weight:400;color:var(--muted)}
+.dbt{width:100%;border-collapse:collapse;font-size:13px}
+.dbt th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;padding:7px 8px;border-bottom:1px solid var(--line-strong);background:var(--surface-2);white-space:nowrap}
+.dbt td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.dbt td.n,.dbt th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dbt td.cat{white-space:nowrap;color:var(--ink-2)}
+.dbt input{width:96px;min-height:30px;padding:3px 8px;text-align:right}
+.dbt tr.edited td{background:var(--gold-soft)}
+.db-mat{margin-top:14px}
+.db-mat .tbl-wrap .dbt{min-width:720px}
+.db-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:16px}
+.db-grid .dbt{min-width:280px}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media print{
+  :root:not(#_p){--bg:#fff;--surface:#fff;--surface-2:#f2f2f2;--ink:#111;--ink-2:#333;--muted:#555;--line:#ccc;--line-strong:#999;--gold:#7a5200;--gold-line:#c9952c;--gold-soft:#f6efe0;color-scheme:light}
+  .topbar,.tabs,.quote-tools,.internal,#p-calc,#p-db{display:none!important}
+  #p-quote{display:block!important;padding:0}
+  .paper{box-shadow:none;border:0;max-width:none;padding:0}
+  .q-price{min-width:0}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="capsule" aria-hidden="true"></span>
+      <div>
+        <h1>保健代工智慧報價</h1>
+        <p>B2B 保健食品代工 × 包裝盒／標籤　成本估算與報價單草稿</p>
+      </div>
+    </div>
+    <div class="timer" id="timer" aria-live="off">
+      <span id="timerLbl">本次報價耗時</span><b id="timerVal">0:00</b><span class="vs">人工比對約 40 分鐘</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="功能分頁">
+    <button role="tab" id="t-calc" data-tab="calc" aria-selected="true" aria-controls="p-calc">報價試算</button>
+    <button role="tab" id="t-quote" data-tab="quote" aria-selected="false" aria-controls="p-quote">報價單草稿</button>
+    <button role="tab" id="t-db" data-tab="db" aria-selected="false" aria-controls="p-db">原料與包材資料庫</button>
+  </nav>
+
+  <main>
+    <!-- ============ 報價試算 ============ -->
+    <section id="p-calc" class="panel" role="tabpanel" aria-labelledby="t-calc">
+      <div class="presets" id="presets"><span>載入範例情境：</span></div>
+
+      <div class="work">
+        <form id="f" class="inputs" autocomplete="off">
+          <fieldset>
+            <legend><span class="step">1</span>客戶與產品</legend>
+            <div class="fs-body">
+              <div class="fields">
+                <div class="field"><label for="client">客戶名稱</label><input type="text" id="client"></div>
+                <div class="field"><label for="contact">聯絡人</label><input type="text" id="contact"></div>
+                <div class="field"><label for="product">產品名稱</label><input type="text" id="product"></div>
+              </div>
+              <div class="fields">
+                <div class="field"><label for="ourCompany">我方公司</label><input type="text" id="ourCompany"></div>
+                <div class="field"><label for="salesRep">報價人</label><input type="text" id="salesRep"></div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step">2</span>劑型與配方<span class="hint">原料單價自動帶入資料庫</span></legend>
+            <div class="fs-body">
+              <div class="forms" id="formPick" role="radiogroup" aria-label="劑型"></div>
+              <div class="fields">
+                <div class="field">
+                  <label for="perBox">每盒入數</label>
+                  <div class="with-unit"><input type="number" id="perBox" min="1" step="1"><span id="perBoxUnit">粒</span></div>
+                </div>
+                <div class="field"><label for="inner">內包裝</label><select id="inner"></select></div>
+              </div>
+              <div>
+                <div class="frow-head"><span>原料</span><span id="doseHead">劑量（mg／粒）</span><span>原料成本</span><span></span></div>
+                <div id="frows"></div>
+              </div>
+              <button type="button" class="add-row" id="addRow">＋ 新增原料</button>
+              <div class="fill" id="fillInfo"></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step">3</span>外盒與標籤<span class="hint">印刷依數量套用階梯單價</span></legend>
+            <div class="fs-body">
+              <div class="fields">
+                <div class="field"><label for="boxType">盒型</label><select id="boxType"></select></div>
+                <div class="field"><label for="boxSize">尺寸</label><select id="boxSize"></select></div>
+                <div class="field"><label for="paper">紙材</label><select id="paper"></select></div>
+                <div class="field"><label for="print">印刷</label><select id="print"></select></div>
+                <div class="field"><label for="lam">表面處理</label><select id="lam"></select></div>
+                <div class="field"><label for="label">瓶身／袋身標籤</label><select id="label"></select></div>
+              </div>
+              <div>
+                <span class="lbl">特殊工藝</span>
+                <div class="chks" id="specials"></div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step">4</span>數量方案與條件</legend>
+            <div class="fs-body">
+              <div class="fields">
+                <div class="field"><label for="tier0">方案 A（盒）</label><input type="number" id="tier0" min="100" step="500"></div>
+                <div class="field"><label for="tier1">方案 B（盒）</label><input type="number" id="tier1" min="100" step="500"></div>
+                <div class="field"><label for="tier2">方案 C（盒）</label><input type="number" id="tier2" min="100" step="500"></div>
+              </div>
+              <div class="fields">
+                <div class="field"><label for="test">品質檢驗</label><select id="test"></select></div>
+                <div class="field"><label for="loss">製程損耗率（%）</label><input type="number" id="loss" min="0" max="20" step="0.5"></div>
+              </div>
+              <div class="field">
+                <label for="margin">目標毛利率</label>
+                <div class="range-row"><input type="range" id="margin" min="10" max="45" step="1"><output id="marginOut" for="margin">25%</output></div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+
+        <aside class="results" aria-label="即時報價">
+          <div class="res-head"><h2>即時報價</h2><span>每盒單價・未稅・新台幣</span></div>
+          <div class="tiers" id="tierCards"></div>
+
+          <div class="chart-block">
+            <h3>每盒成本組成</h3>
+            <div class="legend" id="legend"></div>
+            <div class="plot" id="plot"></div>
+          </div>
+
+          <ul class="alerts" id="alerts"></ul>
+          <button type="button" class="cta" id="genBtn">產生報價單與溝通重點 →</button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ 報價單草稿 ============ -->
+    <section id="p-quote" class="panel" role="tabpanel" aria-labelledby="t-quote" hidden>
+      <div class="quote-tools">
+        <div class="done-note" id="doneNote">修改規格請回「報價試算」，報價單會同步更新。</div>
+        <div class="btns">
+          <button type="button" class="btn primary" id="copySum">複製報價摘要（LINE／Email）</button>
+          <button type="button" class="btn" id="copyPts">複製溝通重點</button>
+          <button type="button" class="btn" id="printBtn" hidden>列印／存成 PDF</button>
+        </div>
+      </div>
+      <textarea id="copyFallback" readonly hidden aria-label="複製內容"></textarea>
+      <div class="quote-layout">
+        <article class="paper" id="paper"></article>
+        <aside class="internal">
+          <h2>業務溝通重點 <span class="tag-int">內部使用・勿提供客戶</span></h2>
+          <ol id="points"></ol>
+          <h3>成本明細（每盒・新台幣）</h3>
+          <div class="tbl-wrap"><table class="ctab" id="costTable"></table></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ 資料庫 ============ -->
+    <section id="p-db" class="panel" role="tabpanel" aria-labelledby="t-db" hidden>
+      <div class="db-intro">
+        <p>以下為示範用參考單價，非實際市場行情。原料單價可直接修改，報價會即時重算；正式導入時可改為串接採購系統或 Excel 價格表。</p>
+        <div class="db-filters">
+          <input type="text" id="dbSearch" placeholder="搜尋原料名稱" aria-label="搜尋原料名稱">
+          <select id="dbCat" aria-label="原料分類"></select>
+          <button type="button" class="btn" id="dbReset">還原預設單價</button>
+        </div>
+      </div>
+      <div class="db-card db-mat">
+        <h3>原料資料庫 <small id="dbCount"></small></h3>
+        <div class="tbl-wrap"><table class="dbt" id="matTable"></table></div>
+      </div>
+      <div class="db-grid" id="dbGrid"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------------- 資料庫（示範用估價） ---------------- */
+const MATERIALS = [
+  {id:'lutein',     name:'葉黃素 20%（金盞花萃取）',     cat:'眼睛保健', origin:'美國',   price:6800,  dose:50,   note:'游離型，50 mg 約含葉黃素 10 mg'},
+  {id:'zeax',       name:'玉米黃素 5%',                  cat:'眼睛保健', origin:'印度',   price:9500,  dose:40,   note:''},
+  {id:'bilberry',   name:'山桑子萃取（花青素 25%）',     cat:'眼睛保健', origin:'義大利', price:5200,  dose:80,   note:''},
+  {id:'fishoil',    name:'魚油 rTG 84%',                 cat:'心血管',   origin:'挪威',   price:1350,  dose:1000, note:'液態，適用軟膠囊'},
+  {id:'nattokinase',name:'納豆激酶 20,000 FU/g',         cat:'心血管',   origin:'日本',   price:12500, dose:100,  note:''},
+  {id:'redyeast',   name:'紅麴米粉',                     cat:'心血管',   origin:'台灣',   price:1600,  dose:300,  note:'須附橘黴素檢驗'},
+  {id:'probiotic',  name:'益生菌複方（1,000 億 CFU/g）', cat:'腸道保健', origin:'台灣',   price:16000, dose:100,  note:'怕熱怕潮，需防潮包材'},
+  {id:'enzyme',     name:'綜合蔬果發酵粉',               cat:'腸道保健', origin:'台灣',   price:1250,  dose:2000, note:''},
+  {id:'collagen',   name:'魚鱗膠原蛋白胜肽',             cat:'美容保養', origin:'日本',   price:850,   dose:5000, note:'建議粉包或液態劑型'},
+  {id:'hyaluronic', name:'玻尿酸鈉（食品級）',           cat:'美容保養', origin:'中國',   price:9000,  dose:50,   note:''},
+  {id:'vitc',       name:'維生素 C',                     cat:'營養補充', origin:'英國',   price:380,   dose:500,  note:''},
+  {id:'bcomplex',   name:'B 群預混粉',                   cat:'營養補充', origin:'德國',   price:2600,  dose:150,  note:''},
+  {id:'vitd3',      name:'維生素 D3（100,000 IU/g）',    cat:'營養補充', origin:'瑞士',   price:3200,  dose:10,   note:'10 mg 約 1,000 IU'},
+  {id:'vite',       name:'天然維生素 E',                 cat:'營養補充', origin:'美國',   price:1800,  dose:10,   note:'常用於魚油抗氧化'},
+  {id:'zinc',       name:'葡萄糖酸鋅',                   cat:'營養補充', origin:'美國',   price:650,   dose:30,   note:''},
+  {id:'calcium',    name:'檸檬酸鈣',                     cat:'骨骼關節', origin:'德國',   price:290,   dose:600,  note:''},
+  {id:'magnesium',  name:'甘胺酸鎂',                     cat:'骨骼關節', origin:'美國',   price:980,   dose:300,  note:''},
+  {id:'glucosamine',name:'葡萄糖胺鹽酸鹽',               cat:'骨骼關節', origin:'美國',   price:520,   dose:1500, note:''},
+  {id:'curcumin',   name:'薑黃素 95%',                   cat:'調理機能', origin:'印度',   price:3600,  dose:250,  note:''},
+  {id:'maca',       name:'瑪卡萃取 4:1',                 cat:'調理機能', origin:'秘魯',   price:1450,  dose:500,  note:''},
+  {id:'whey',       name:'分離乳清蛋白 90%',             cat:'運動營養', origin:'紐西蘭', price:520,   dose:15000,note:'粉包單包上限約 20 g'},
+  {id:'flavor',     name:'天然水果風味粉',               cat:'風味調整', origin:'台灣',   price:900,   dose:300,  note:''},
+  {id:'mcc',        name:'微晶纖維素（賦形劑）',         cat:'賦形劑／基底', origin:'台灣', price:180, dose:0, note:'錠劑、膠囊自動補足重量', auto:true},
+  {id:'soyoil',     name:'大豆油（軟膠囊基底）',         cat:'賦形劑／基底', origin:'美國', price:95,  dose:0, note:'軟膠囊自動補足填充量', auto:true},
+  {id:'malto',      name:'麥芽糊精（粉包基底）',         cat:'賦形劑／基底', origin:'法國', price:120, dose:0, note:'粉包自動補足重量', auto:true},
+];
+const MAT = Object.fromEntries(MATERIALS.map(m => [m.id, m]));
+const DEFAULT_PRICE = Object.fromEntries(MATERIALS.map(m => [m.id, m.price]));
+
+// fee = 代工費／單位；shell = 膠殼；pack = 單位包材；base = 液體／凝膠基底；setup = 開機清線＋配方試製
+const FORMS = {
+  tablet:  {name:'錠劑',     unit:'錠', fee:0.12, shell:0,    pack:0,    base:0,   filler:'mcc',    minFill:500,  maxFill:1200,  setup:25000, moq:50000,  perBox:60, lead:[25,35], inner:['pe_bottle','glass_bottle','zip_bag','ptp'], defInner:'pe_bottle', note:'含打錠、膜衣'},
+  capsule: {name:'硬膠囊',   unit:'粒', fee:0.12, shell:0.13, pack:0,    base:0,   filler:'mcc',    minFill:300,  maxFill:500,   setup:20000, moq:50000,  perBox:60, lead:[25,35], inner:['pe_bottle','glass_bottle','zip_bag','ptp'], defInner:'pe_bottle', note:'HPMC 植物膠囊 0 號'},
+  softgel: {name:'軟膠囊',   unit:'粒', fee:0.48, shell:0,    pack:0,    base:0,   filler:'soyoil', minFill:500,  maxFill:1200,  setup:40000, moq:100000, perBox:60, lead:[35,45], inner:['pe_bottle','glass_bottle','zip_bag','ptp'], defInner:'pe_bottle', note:'含明膠殼料與壓丸'},
+  stick:   {name:'粉包',     unit:'包', fee:1.00, shell:0,    pack:0.55, base:0,   filler:'malto',  minFill:3000, maxFill:20000, setup:15000, moq:20000,  perBox:30, lead:[20,30], inner:['none'], defInner:'none', packName:'鋁箔複合膜條狀包', note:'條狀包充填'},
+  liquid:  {name:'液態飲',   unit:'瓶', fee:3.80, shell:0,    pack:4.2,  base:0.8, filler:null,     minFill:0,    maxFill:0,     setup:35000, moq:10000,  perBox:10, lead:[30,40], inner:['none'], defInner:'none', packName:'50 ml 玻璃瓶＋鋁蓋', baseName:'水＋果汁調味基底', note:'調配、充填、殺菌'},
+  jelly:   {name:'果凍條',   unit:'條', fee:2.20, shell:0,    pack:0.75, base:0.6, filler:null,     minFill:0,    maxFill:0,     setup:30000, moq:30000,  perBox:15, lead:[30,40], inner:['none'], defInner:'none', packName:'鋁箔條狀包', baseName:'蒟蒻凝膠基底', note:'調配、充填、殺菌'},
+};
+const INNER = {
+  pe_bottle:   {name:'HDPE 瓶＋蓋＋乾燥劑＋封口膜', perBox:6.5},
+  glass_bottle:{name:'茶色玻璃瓶＋鋁蓋',           perBox:14},
+  zip_bag:     {name:'鋁箔夾鏈立袋',               perBox:4.2},
+  ptp:         {name:'PTP 鋁箔泡殼（每板 10 粒）', perUnit:0.18},
+  none:        {name:'單位包材已含於代工費',       perBox:0},
+};
+const BOX = {
+  tuck:      {name:'插舌卡盒',           base:2.2, die:3500, extraLead:0},
+  autobottom:{name:'自動扣底盒',         base:2.8, die:4000, extraLead:0},
+  drawer:    {name:'抽屜盒',             base:6.5, die:5000, extraLead:3},
+  rigid:     {name:'天地蓋硬盒（禮盒）', base:15,  die:6000, extraLead:8},
+  magnetic:  {name:'書型磁吸硬盒',       base:22,  die:6500, extraLead:10},
+  none:      {name:'不需外盒',           base:0,   die:0,    extraLead:0},
+};
+const SIZE  = {s:{name:'小（約 6×6×11 cm）', f:1}, m:{name:'中（約 10×6×15 cm）', f:1.35}, l:{name:'大（約 18×12×8 cm）', f:1.8}};
+const PAPER = {white:{name:'350g 白卡紙', f:1}, coated:{name:'350g 銅版卡', f:0.95}, grey:{name:'400g 灰銅卡', f:0.85}, kraft:{name:'350g 牛皮卡', f:1.1}, fancy:{name:'珠光／特殊美術紙', f:1.6}};
+const PRINT = {c1:{name:'單色印刷', v:0.25, plates:1}, c4:{name:'CMYK 四色', v:0.7, plates:4}, c5:{name:'四色＋1 特別色', v:1.0, plates:5}};
+const LAM   = {none:{name:'不上膜', v:0}, gloss:{name:'亮膜', v:0.35}, matte:{name:'霧膜', v:0.45}, soft:{name:'觸感膜', v:1.1}};
+const SPECIAL = {gold:{name:'燙金', v:0.8, setup:1500}, silver:{name:'燙銀', v:0.8, setup:1500}, spotuv:{name:'局部上光 UV', v:0.6, setup:1800}, emboss:{name:'打凸／壓紋', v:0.6, setup:2500}, window:{name:'開窗貼 PET', v:0.9, setup:0}};
+const LABEL = {none:{name:'不需標籤', v:0, setup:0}, coated:{name:'銅版貼紙', v:0.6, setup:1500}, pp:{name:'PP 合成紙（防水）', v:0.95, setup:1500}, pet:{name:'透明 PET', v:1.3, setup:1500}, foil:{name:'鋁箔／金銀卡', v:1.7, setup:1500}};
+const TEST  = {none:{name:'客戶自行送驗', v:0}, basic:{name:'基本：重金屬 4 項＋微生物', v:9000}, standard:{name:'標準：基本＋西藥 400 項＋塑化劑', v:22000}, full:{name:'完整：標準＋營養標示＋主成分含量', v:36000}};
+const PLATE = 800, PRINT_SETUP = 3000;
+const LABOR = {base:2.5, label:0.4, carton:0.5};
+const PRINT_TIERS = [{max:1999, f:1.2, label:'< 2,000 盒'}, {max:4999, f:1.0, label:'2,000–4,999 盒'}, {max:9999, f:0.88, label:'5,000–9,999 盒'}, {max:Infinity, f:0.78, label:'≥ 10,000 盒'}];
+const MFG_TIERS   = [{max:49999, f:1.25, label:'< 5 萬單位'}, {max:199999, f:1.0, label:'5–20 萬單位'}, {max:499999, f:0.9, label:'20–50 萬單位'}, {max:Infinity, f:0.82, label:'≥ 50 萬單位'}];
+
+const SEG = [
+  {key:'raw',   name:'原料',           c:'s1'},
+  {key:'mfg',   name:'代工製造',       c:'s2'},
+  {key:'inner', name:'內包材',         c:'s3'},
+  {key:'box',   name:'外盒印刷',       c:'s4'},
+  {key:'pack',  name:'標籤與包裝工資', c:'s5'},
+  {key:'fixed', name:'一次性費用攤提', c:'s6'},
+];
+const LET = ['A','B','C'];
+
+const PRESETS = {
+  lutein:  {title:'葉黃素膠囊', product:'晶亮葉黃素複方膠囊', client:'樂活健康有限公司（範例）', form:'capsule', perBox:60,
+            formula:[['lutein',50],['zeax',40],['bilberry',80],['zinc',20]], inner:'pe_bottle',
+            boxType:'tuck', boxSize:'s', paper:'white', print:'c4', lam:'matte', specials:['gold'], label:'pp',
+            tiers:[1000,3000,5000], test:'standard', margin:25},
+  collagen:{title:'膠原蛋白粉包', product:'青春膠原蛋白粉', client:'美研生活股份有限公司（範例）', form:'stick', perBox:30,
+            formula:[['collagen',5000],['hyaluronic',50],['vitc',100],['flavor',300]], inner:'none',
+            boxType:'autobottom', boxSize:'m', paper:'white', print:'c4', lam:'soft', specials:['silver','spotuv'], label:'none',
+            tiers:[1000,3000,5000], test:'standard', margin:28},
+  fishoil: {title:'魚油軟膠囊禮盒', product:'深海 rTG 魚油軟膠囊禮盒', client:'福滿禮品行（範例）', form:'softgel', perBox:90,
+            formula:[['fishoil',1000],['vite',10]], inner:'glass_bottle',
+            boxType:'rigid', boxSize:'m', paper:'fancy', print:'c5', lam:'matte', specials:['gold','emboss'], label:'foil',
+            tiers:[1000,2000,5000], test:'full', margin:30},
+  bvit:    {title:'B 群錠', product:'活力 B 群＋C 錠', client:'安心藥局連鎖（範例）', form:'tablet', perBox:30,
+            formula:[['bcomplex',150],['vitc',250],['zinc',30]], inner:'ptp',
+            boxType:'tuck', boxSize:'s', paper:'coated', print:'c4', lam:'gloss', specials:[], label:'none',
+            tiers:[3000,5000,10000], test:'basic', margin:22},
+};
+
+/* ---------------- 工具 ---------------- */
+const $ = s => document.querySelector(s);
+const fmt  = n => Math.round(n).toLocaleString('zh-TW');
+const fmt1 = n => n.toLocaleString('zh-TW', {minimumFractionDigits:1, maximumFractionDigits:1});
+const fmt2 = n => n.toLocaleString('zh-TW', {minimumFractionDigits:2, maximumFractionDigits:2});
+const pct  = n => `${Math.round(n*100)}%`;
+const esc  = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tierOf = (tiers, x) => tiers.find(t => x <= t.max);
+const options = (obj, keys) => (keys || Object.keys(obj)).map(k => `<option value="${k}">${esc(obj[k].name)}</option>`).join('');
+const ymd = d => `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+
+/* ---------------- 狀態 ---------------- */
+let state = {ourCompany:'示範生技股份有限公司', contact:'王經理', salesRep:'業務部 陳專員', loss:3};
+
+function loadPreset(key){
+  const p = PRESETS[key];
+  state = {
+    ourCompany:state.ourCompany, contact:state.contact, salesRep:state.salesRep, loss:state.loss,
+    client:p.client, product:p.product, form:p.form, perBox:p.perBox,
+    formula:p.formula.map(([id,dose]) => ({id, dose})), inner:p.inner,
+    boxType:p.boxType, boxSize:p.boxSize, paper:p.paper, print:p.print, lam:p.lam,
+    specials:[...p.specials], label:p.label, tiers:[...p.tiers], test:p.test, margin:p.margin, preset:key,
+  };
+  fillForm();
+  update();
+}
+
+/* ---------------- 計算核心 ---------------- */
+function compute(s, Q){
+  const f = FORMS[s.form];
+  const N = Math.max(1, Math.round(s.perBox) || 1);
+  const loss = 1 + Math.max(0, +s.loss || 0) / 100;
+  const units = Q * N;
+
+  let active = 0, ingUnit = 0;
+  const ing = [];
+  for (const r of s.formula){
+    const m = MAT[r.id]; if (!m) continue;
+    const d = Math.max(0, +r.dose || 0);
+    const c = d * m.price / 1e6;               // mg × 元/kg
+    active += d; ingUnit += c;
+    ing.push({id:r.id, name:m.name, dose:d, unitCost:c, boxCost:c * N * loss});
+  }
+  const fillerMg = f.filler ? Math.max(0, f.minFill - active) : 0;
+  const fillerUnit = f.filler ? fillerMg * MAT[f.filler].price / 1e6 : 0;
+  const raw = (ingUnit + fillerUnit + f.base) * N * loss;
+
+  const mt = tierOf(MFG_TIERS, units * loss);
+  const mfg = (f.fee * mt.f + f.shell + f.pack) * N * loss;
+
+  const ip = INNER[s.inner] || INNER.none;
+  const inner = (ip.perUnit ? ip.perUnit * N : ip.perBox) * loss;
+
+  const pt = tierOf(PRINT_TIERS, Q);
+  let box = 0, boxFixed = 0, boxReFixed = 0, specialV = 0;
+  if (s.boxType !== 'none'){
+    const b = BOX[s.boxType], sz = SIZE[s.boxSize].f, pr = PRINT[s.print];
+    specialV = s.specials.reduce((a,k) => a + SPECIAL[k].v, 0) * sz * pt.f;
+    box = (b.base * sz * PAPER[s.paper].f + (pr.v + LAM[s.lam].v) * sz) * pt.f + specialV;
+    boxFixed = b.die + pr.plates * PLATE + PRINT_SETUP + s.specials.reduce((a,k) => a + SPECIAL[k].setup, 0);
+    boxReFixed = pr.plates * PLATE + PRINT_SETUP;   // 翻單：刀模、燙金／打凸版可沿用
+  }
+  const lb = LABEL[s.label];
+  const pack = lb.v * pt.f * loss + LABOR.base + (s.label !== 'none' ? LABOR.label : 0) + LABOR.carton;
+
+  const testFee = TEST[s.test].v;
+  const fixedTotal = f.setup + boxFixed + lb.setup + testFee;
+  const fixed = fixedTotal / Q;
+  const variable = raw + mfg + inner + box + pack;
+  const cost = variable + fixed;
+  const m = Math.min(0.9, Math.max(0, s.margin / 100));
+  const price = Math.ceil(cost / (1 - m));
+  const reorderPrice = Math.ceil((variable + (f.setup + boxReFixed + testFee) / Q) / (1 - m));
+  const subtotal = price * Q, tax = Math.round(subtotal * 0.05);
+
+  return {Q, N, units, active, fillerMg, fill:active + fillerMg, ing, raw, mfg, inner, box, pack, fixed, fixedTotal,
+          cost, price, perUnit:price / N, subtotal, tax, grand:subtotal + tax, profit:(price - cost) * Q,
+          reorderPrice, mfgTier:mt, printTier:pt};
+}
+const sortedTiers = s => s.tiers.map(q => Math.max(100, Math.round(+q) || 0)).sort((a,b) => a - b);
+const computeAll = s => sortedTiers(s).map(Q => compute(s, Q));
+function pickRec(R){
+  // 往上加量若每盒還能再省 10% 以上就繼續往上推；省不到 10% 的那一階就是甜蜜點
+  let i = 0;
+  while (i < R.length - 1 && (R[i].price - R[i+1].price) / R[i].price >= 0.10) i++;
+  return i;
+}
+function leadDays(s){
+  const f = FORMS[s.form], ex = BOX[s.boxType].extraLead;
+  return `${f.lead[0] + ex}–${f.lead[1] + ex}`;
+}
+
+/* ---------------- 表單 ---------------- */
+const SIMPLE = {
+  client:'text', contact:'text', product:'text', ourCompany:'text', salesRep:'text',
+  perBox:'num', inner:'sel', boxType:'sel', boxSize:'sel', paper:'sel', print:'sel', lam:'sel', label:'sel',
+  test:'sel', loss:'num', margin:'num',
+};
+
+function buildStatic(){
+  $('#presets').insertAdjacentHTML('beforeend',
+    Object.entries(PRESETS).map(([k,p]) => `<button type="button" class="chip" data-preset="${k}">${esc(p.title)}</button>`).join(''));
+  $('#formPick').innerHTML = Object.entries(FORMS).map(([k,f]) =>
+    `<label class="form-opt" data-form="${k}"><input type="radio" name="form" value="${k}" id="form-${k}"><b>${f.name}</b><small>代工 NT$${fmt2(f.fee)}／${f.unit}</small></label>`).join('');
+  $('#boxType').innerHTML = options(BOX);
+  $('#boxSize').innerHTML = options(SIZE);
+  $('#paper').innerHTML = options(PAPER);
+  $('#print').innerHTML = options(PRINT);
+  $('#lam').innerHTML = options(LAM);
+  $('#label').innerHTML = options(LABEL);
+  $('#test').innerHTML = options(TEST);
+  $('#specials').innerHTML = Object.entries(SPECIAL).map(([k,sp]) =>
+    `<label class="chk" data-sp="${k}"><input type="checkbox" value="${k}" id="sp-${k}">${sp.name}</label>`).join('');
+}
+
+function fillForm(){
+  const f = FORMS[state.form];
+  $('#inner').innerHTML = f.inner.map(k => `<option value="${k}">${esc(k === 'none' ? `${f.packName}（含於代工費）` : INNER[k].name)}</option>`).join('');
+  for (const id of Object.keys(SIMPLE)) $('#' + id).value = state[id];
+  state.tiers.forEach((q,i) => { $('#tier' + i).value = q; });
+  document.querySelectorAll('#formPick input').forEach(r => { r.checked = r.value === state.form; });
+  document.querySelectorAll('#specials input').forEach(c => { c.checked = state.specials.includes(c.value); });
+  document.querySelectorAll('#presets .chip').forEach(b => b.classList.toggle('on', b.dataset.preset === state.preset));
+  renderFormula();
+}
+
+function renderFormula(){
+  const opts = MATERIALS.filter(m => !m.auto);
+  const cats = [...new Set(opts.map(m => m.cat))];
+  const sel = id => cats.map(c => `<optgroup label="${c}">${opts.filter(m => m.cat === c)
+    .map(m => `<option value="${m.id}"${m.id === id ? ' selected' : ''}>${esc(m.name)}</option>`).join('')}</optgroup>`).join('');
+  $('#frows').innerHTML = state.formula.map((r,i) => `
+    <div class="frow" data-i="${i}">
+      <select class="fsel" id="fm-id-${i}" aria-label="原料 ${i+1}">${sel(r.id)}</select>
+      <input type="number" class="fdose" id="fm-dose-${i}" min="0" step="1" value="${r.dose}" aria-label="原料 ${i+1} 劑量（mg）">
+      <span class="fcost" id="fm-cost-${i}"></span>
+      <button type="button" class="fdel" aria-label="移除原料 ${i+1}">×</button>
+    </div>`).join('');
+}
+
+function bindForm(){
+  for (const [id, type] of Object.entries(SIMPLE)){
+    $('#' + id).addEventListener(type === 'sel' ? 'change' : 'input', e => {
+      state[id] = type === 'num' ? (parseFloat(e.target.value) || 0) : e.target.value;
+      update();
+    });
+  }
+  [0,1,2].forEach(i => $('#tier' + i).addEventListener('input', e => { state.tiers[i] = parseFloat(e.target.value) || 0; update(); }));
+  $('#formPick').addEventListener('change', e => {
+    const k = e.target.value; const f = FORMS[k];
+    state.form = k; state.perBox = f.perBox; state.inner = f.defInner;
+    fillForm(); update();
+  });
+  $('#specials').addEventListener('change', () => {
+    state.specials = [...document.querySelectorAll('#specials input:checked')].map(c => c.value);
+    update();
+  });
+  $('#frows').addEventListener('change', e => {
+    if (!e.target.classList.contains('fsel')) return;
+    const i = +e.target.closest('.frow').dataset.i;
+    state.formula[i] = {id:e.target.value, dose:MAT[e.target.value].dose};
+    $('#fm-dose-' + i).value = state.formula[i].dose;
+    update();
+  });
+  $('#frows').addEventListener('input', e => {
+    if (!e.target.classList.contains('fdose')) return;
+    state.formula[+e.target.closest('.frow').dataset.i].dose = parseFloat(e.target.value) || 0;
+    update();
+  });
+  $('#frows').addEventListener('click', e => {
+    if (!e.target.classList.contains('fdel')) return;
+    state.formula.splice(+e.target.closest('.frow').dataset.i, 1);
+    renderFormula(); update();
+  });
+  $('#addRow').addEventListener('click', () => {
+    const used = new Set(state.formula.map(r => r.id));
+    const m = MATERIALS.find(x => !x.auto && !used.has(x.id)) || MATERIALS[0];
+    state.formula.push({id:m.id, dose:m.dose});
+    renderFormula(); update();
+    $('#fm-id-' + (state.formula.length - 1)).focus();
+  });
+  $('#presets').addEventListener('click', e => {
+    const b = e.target.closest('[data-preset]'); if (!b) return;
+    loadPreset(b.dataset.preset);
+    restartTimer();
+  });
+  $('#f').addEventListener('submit', e => e.preventDefault());
+}
+
+/* ---------------- 試算畫面 ---------------- */
+function renderCalcSide(R, rec){
+  const s = state, f = FORMS[s.form];
+  const r0 = R[0];
+
+  // 劑型卡、單位
+  document.querySelectorAll('.form-opt').forEach(el => el.classList.toggle('on', el.dataset.form === s.form));
+  $('#perBoxUnit').textContent = `${f.unit}／盒`;
+  $('#doseHead').textContent = `劑量（mg／${f.unit}）`;
+  $('#marginOut').textContent = `${s.margin}%`;
+  s.formula.forEach((r,i) => {
+    const m = MAT[r.id], el = $('#fm-cost-' + i);
+    if (el && m) el.textContent = `NT$${fmt2((+r.dose || 0) * m.price / 1e6)}／${f.unit}`;
+  });
+
+  // 外盒欄位啟用狀態
+  const noBox = s.boxType === 'none';
+  ['boxSize','paper','print','lam'].forEach(id => { $('#' + id).disabled = noBox; });
+  document.querySelectorAll('#specials .chk').forEach(el => {
+    el.classList.toggle('dis', noBox);
+    el.classList.toggle('on', el.querySelector('input').checked);
+  });
+
+  // 填充量
+  const fi = $('#fillInfo');
+  if (!f.filler){
+    fi.innerHTML = `<div>每${f.unit}活性成分 <b>${fmt(r0.active)} mg</b>　<span class="muted">基底：${f.baseName}（NT$${fmt2(f.base)}／${f.unit}）・包材：${f.packName}</span></div>`;
+  } else {
+    const over = r0.fill > f.maxFill, scale = Math.max(f.maxFill, r0.fill);
+    const fname = MAT[f.filler].name.replace(/（.*）/, '');
+    fi.innerHTML = `
+      <div>每${f.unit}總重 <b>${fmt(r0.fill)} mg</b>　<span class="muted">上限約 ${fmt(f.maxFill)} mg</span></div>
+      <div class="meter${over ? ' over' : ''}" role="img" aria-label="填充量 ${fmt(r0.fill)} mg，上限 ${fmt(f.maxFill)} mg">
+        <span class="m-a" style="width:${r0.active / scale * 100}%"></span><span class="m-f" style="width:${r0.fillerMg / scale * 100}%"></span>
+      </div>
+      <div class="meter-key"><span><i style="background:var(--${over ? 'crit' : 'accent'})"></i>活性成分 ${fmt(r0.active)} mg</span><span><i style="background:var(--gold-line)"></i>${fname}補足 ${fmt(r0.fillerMg)} mg</span></div>`;
+  }
+
+  // 方案卡
+  $('#tierCards').innerHTML = R.map((r,i) => `
+    <div class="tier${i === rec ? ' rec' : ''}">
+      <div class="tq"><span>方案 ${LET[i]}・<span class="num">${fmt(r.Q)}</span> 盒</span>${i === rec ? '<span class="badge">建議主推</span>' : ''}</div>
+      <div class="tp"><small>NT$</small>${fmt(r.price)}</div>
+      <div class="tu">每${f.unit} NT$${fmt2(r.perUnit)}</div>
+      <div class="tt"><span>含稅總額<b>${fmt(r.grand)}</b></span><span>預估毛利<b>${fmt(r.profit)}</b></span></div>
+    </div>`).join('');
+
+  renderChart(R);
+  renderAlerts(R);
+}
+
+function niceStep(x){
+  const p = Math.pow(10, Math.floor(Math.log10(x))), m = x / p;
+  return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+}
+
+function renderChart(R){
+  $('#legend').innerHTML = SEG.map(sg => `<span class="lg"><i class="sw" style="background:var(--${sg.c})"></i>${sg.name}</span>`).join('');
+  const max = Math.max(...R.map(r => r.cost), 1);
+  const step = niceStep(max / 4), top = Math.ceil(max / step) * step;
+  const ticks = []; for (let t = 0; t <= top + 1e-9; t += step) ticks.push(t);
+  let h = `<div class="gridov" style="grid-row:1 / span ${R.length + 1}">${ticks.map(t => `<span style="left:${t / top * 100}%"></span>`).join('')}</div>`;
+  R.forEach((r,i) => {
+    const segs = SEG.filter(sg => r[sg.key] > 0.004)
+      .map(sg => `<span class="seg" style="flex-grow:${r[sg.key]};background:var(--${sg.c})" data-i="${i}" data-k="${sg.key}"></span>`).join('');
+    h += `<div class="bar-label" style="grid-row:${i + 1}">${LET[i]}・${fmt(r.Q)}</div>
+          <div class="bar-track" style="grid-row:${i + 1}"><div class="bar" style="width:${r.cost / top * 100}%">${segs}</div></div>
+          <div class="bar-val" style="grid-row:${i + 1}">${fmt1(r.cost)}</div>`;
+  });
+  h += `<div class="axis" style="grid-row:${R.length + 1}">${ticks.map(t => `<span style="left:${t / top * 100}%">${fmt(t)}</span>`).join('')}</div>
+        <div class="axis-cap" style="grid-row:${R.length + 1}">元／盒</div>
+        <div class="tip" id="tip" hidden></div>`;
+  const plot = $('#plot');
+  plot.innerHTML = h;
+  plot._R = R;
+}
+
+function bindChart(){
+  const plot = $('#plot');
+  const show = e => {
+    const seg = e.target.closest('.seg'); const tip = $('#tip');
+    if (!seg){ tip.hidden = true; return; }
+    const r = plot._R[+seg.dataset.i], sg = SEG.find(x => x.key === seg.dataset.k);
+    tip.innerHTML = `方案 ${LET[+seg.dataset.i]}・${sg.name}<br><b>NT$${fmt1(r[sg.key])}</b>／盒（${pct(r[sg.key] / r.cost)}）`;
+    const box = plot.getBoundingClientRect();
+    tip.style.left = Math.min(Math.max(e.clientX - box.left, 70), box.width - 70) + 'px';
+    tip.style.top = (seg.getBoundingClientRect().top - box.top) + 'px';
+    tip.hidden = false;
+  };
+  plot.addEventListener('pointermove', show);
+  plot.addEventListener('pointerdown', show);
+  plot.addEventListener('pointerleave', () => { const t = $('#tip'); if (t) t.hidden = true; });
+}
+
+function getAlerts(R){
+  const s = state, f = FORMS[s.form], r0 = R[0], out = [];
+  const has = id => s.formula.some(r => r.id === id);
+  if (!s.formula.length) out.push(['crit','必填','請至少加入一項原料。']);
+  if (f.maxFill && r0.fill > f.maxFill)
+    out.push(['crit','超出容量', `每${f.unit} ${fmt(r0.fill)} mg 超過${f.name}上限約 ${fmt(f.maxFill)} mg，建議改為每次食用 2 ${f.unit}或降低劑量。`]);
+  if (r0.units < f.moq)
+    out.push(['warn','低於批量', `方案 A 共 ${fmt(r0.units)} ${f.unit}，低於${f.name}建議最小批量 ${fmt(f.moq)} ${f.unit}，代工費與開機費分攤偏高。`]);
+  if (has('fishoil') && s.form !== 'softgel') out.push(['warn','劑型', '魚油為液態原料，建議改用軟膠囊劑型。']);
+  if (has('probiotic')) out.push(['info','提醒', '益生菌怕熱怕潮，包材需加乾燥劑或使用鋁箔材質，並標示保存條件。']);
+  if (has('redyeast')) out.push(['info','提醒', '紅麴原料須檢附橘黴素檢驗報告。']);
+  if (s.boxType === 'none' && s.inner === 'none') out.push(['warn','包裝', `${f.packName}未裝外盒，零售陳列與運送較易受損，建議至少使用卡盒。`]);
+  if (s.margin < 15) out.push(['warn','毛利', `目標毛利率 ${s.margin}% 偏低，客戶議價後可能低於成本。`]);
+  return out;
+}
+function renderAlerts(R){
+  const a = getAlerts(R);
+  $('#alerts').innerHTML = (a.length ? a : [['ok','檢查通過','配方容量、批量與包材組合皆在合理範圍。']])
+    .map(([lv, t, msg]) => `<li><span class="lvl ${lv}">${t}</span><span>${msg}</span></li>`).join('');
+}
+
+/* ---------------- 報價單 ---------------- */
+const quoteDate = new Date();
+const validDate = new Date(quoteDate.getTime() + 30 * 864e5);
+const quoteNo = `QT-${ymd(quoteDate).replace(/\//g, '')}-${String(quoteDate.getHours()).padStart(2,'0')}${String(quoteDate.getMinutes()).padStart(2,'0')}`;
+
+function specRows(R){
+  const s = state, f = FORMS[s.form], r0 = R[0];
+  const filler = f.filler && r0.fillerMg > 0 ? `、${MAT[f.filler].name.replace(/（.*）/, '')} ${fmt(r0.fillerMg)} mg` : '';
+  const boxTxt = s.boxType === 'none' ? '不需外盒'
+    : [BOX[s.boxType].name, SIZE[s.boxSize].name, PAPER[s.paper].name, PRINT[s.print].name, LAM[s.lam].name,
+       ...s.specials.map(k => SPECIAL[k].name)].join('、');
+  return [
+    ['產品名稱', esc(s.product)],
+    ['劑型規格', `${f.name}，每盒 ${fmt(r0.N)} ${f.unit}` + (f.filler ? `，每${f.unit}約 ${fmt(r0.fill)} mg` : `，${f.packName}`)],
+    [`配方（每${f.unit}）`, r0.ing.map(x => `${esc(x.name)} ${fmt(x.dose)} mg`).join('、') + filler || '—'],
+    ['內包裝', s.inner === 'none' ? f.packName : INNER[s.inner].name],
+    ['外盒', boxTxt],
+    ['標籤', LABEL[s.label].name],
+    ['品質檢驗', TEST[s.test].name],
+  ];
+}
+
+function renderQuote(R, rec){
+  const s = state, f = FORMS[s.form], r = R[rec];
+  $('#paper').innerHTML = `
+    <header class="q-head">
+      <div><div class="q-co">${esc(s.ourCompany)}</div><div class="q-sub">保健食品 OEM／ODM 代工</div></div>
+      <div class="q-title"><span>報價單</span><small>QUOTATION</small></div>
+    </header>
+    <dl class="q-meta">
+      <div><dt>客戶名稱</dt><dd>${esc(s.client)}</dd></div>
+      <div><dt>報價單號</dt><dd class="num">${quoteNo}</dd></div>
+      <div><dt>聯絡人</dt><dd>${esc(s.contact)}</dd></div>
+      <div><dt>報價日期</dt><dd class="num">${ymd(quoteDate)}</dd></div>
+      <div><dt>報價人</dt><dd>${esc(s.salesRep)}</dd></div>
+      <div><dt>有效期限</dt><dd class="num">${ymd(validDate)}</dd></div>
+    </dl>
+
+    <h4>一、產品規格</h4>
+    <table class="q-spec"><tbody>${specRows(R).map(([k,v]) => `<tr><th scope="row">${k}</th><td>${v}</td></tr>`).join('')}</tbody></table>
+
+    <h4>二、報價方案</h4>
+    <div class="tbl-wrap"><table class="q-price">
+      <thead><tr><th>方案</th><th>訂購數量</th><th>每盒單價</th><th>換算每${f.unit}</th><th>小計（未稅）</th><th>營業稅 5%</th><th>含稅總計</th></tr></thead>
+      <tbody>${R.map((x,i) => `<tr${i === rec ? ' class="rec"' : ''}>
+        <td>方案 ${LET[i]}${i === rec ? '<span class="rb">建議</span>' : ''}</td>
+        <td class="n">${fmt(x.Q)} 盒</td><td class="n">${fmt(x.price)}</td><td class="n">${fmt2(x.perUnit)}</td>
+        <td class="n">${fmt(x.subtotal)}</td><td class="n">${fmt(x.tax)}</td><td class="n">${fmt(x.grand)}</td></tr>`).join('')}
+      </tbody></table></div>
+    <p class="q-note">單位：新台幣元。單價已含原料、代工、包材、印刷及一次性費用（開機清線、刀模、印刷版、檢驗）攤提。</p>
+
+    <h4>三、交易條件</h4>
+    <ol class="q-terms">
+      <li>付款條件：確認訂單後支付訂金 50%，出貨前付清尾款。</li>
+      <li>交期：配方確認且原料、包材到廠後約 ${leadDays(s)} 個工作天；包材打樣另需約 5–7 個工作天。</li>
+      <li>交貨數量允許 ±5% 誤差，依實際出貨數量計價。</li>
+      <li>翻單（相同配方與包材）可沿用刀模及特殊工藝版，以方案 ${LET[rec]} 數量計每盒約 NT$${fmt(r.reorderPrice)}。</li>
+      <li>外盒與標籤設計稿由貴公司提供 AI 向量檔（含 3 mm 出血），打樣確認後量產。</li>
+      <li>原料市場價格波動超過 10% 時，雙方另行議價。</li>
+      <li>運送：台灣本島單一地址免運費，外島及分批出貨另計。</li>
+    </ol>
+
+    <div class="q-sign">
+      <div><div class="lbl">報價單位</div>${esc(s.ourCompany)}<br>${esc(s.salesRep)}</div>
+      <div><div class="lbl">客戶確認回簽（簽章／日期）</div></div>
+    </div>`;
+}
+
+function altPrice(patch, Q){ return compute({...state, ...patch}, Q).price; }
+
+function buildPoints(R, rec){
+  const s = state, f = FORMS[s.form], r = R[rec], a = R[0], c = R[R.length - 1], pts = [];
+  // 價格策略
+  pts.push(['price','價格策略', `主推方案 ${LET[rec]}（${fmt(r.Q)} 盒）：每盒 <b>NT$${fmt(r.price)}</b>，換算每${f.unit} NT$${fmt2(r.perUnit)}。` +
+    (rec > 0 ? `比 ${fmt(a.Q)} 盒每盒便宜 ${pct((a.price - r.price) / a.price)}；` : '') +
+    (rec < R.length - 1 ? `再加量到 ${fmt(c.Q)} 盒可降到 NT$${fmt(c.price)}，但每盒只再省 ${pct((r.price - c.price) / r.price)}。` : '已是最高數量方案。')]);
+  pts.push(['price','價格策略', `量大價低的主因是一次性費用攤提：開機清線、刀模、印刷版與檢驗合計 NT$${fmt(r.fixedTotal)}，${fmt(a.Q)} 盒時每盒分攤 NT$${fmt1(a.fixed)}，${fmt(c.Q)} 盒時只剩 NT$${fmt1(c.fixed)}。`]);
+  if (r.reorderPrice < r.price)
+    pts.push(['price','價格策略', `翻單可沿用刀模與特殊工藝版，${fmt(r.Q)} 盒每盒約 <b>NT$${fmt(r.reorderPrice)}</b>，可作為簽長約或回購的誘因。`]);
+
+  // 成本結構
+  const parts = SEG.map(sg => ({...sg, v:r[sg.key]})).sort((x,y) => y.v - x.v);
+  let t = `成本最大宗為「${parts[0].name}」，佔每盒成本 ${pct(parts[0].v / r.cost)}`;
+  if (parts[0].key === 'raw' && r.ing.length){
+    const topIng = [...r.ing].sort((x,y) => y.boxCost - x.boxCost)[0];
+    t += `，其中「${esc(topIng.name)}」每盒約 NT$${fmt1(topIng.boxCost)}。若客戶預算有限，可討論調整劑量或改用替代原料。`;
+  } else t += '。';
+  pts.push(['cost','成本結構', t]);
+
+  // 降本方案（重新試算替代規格）
+  if (s.boxType !== 'none' && s.specials.length){
+    const d = r.price - altPrice({specials:[]}, r.Q);
+    if (d > 0) pts.push(['save','降本方案', `${s.specials.map(k => SPECIAL[k].name).join('＋')}每盒約增加 NT$${fmt(d)}。客戶在意預算時可改用特別色印刷呈現質感，${fmt(r.Q)} 盒共省約 NT$${fmt(d * r.Q)}。`]);
+  }
+  if (['rigid','magnetic','drawer'].includes(s.boxType)){
+    const d = r.price - altPrice({boxType:'tuck'}, r.Q);
+    if (d > 0) pts.push(['save','降本方案', `${BOX[s.boxType].name}適合送禮通路，但交期多約 ${BOX[s.boxType].extraLead} 天。若主打電商或藥局通路，改用插舌卡盒每盒可省 NT$${fmt(d)}。`]);
+  }
+  if (s.lam === 'soft' && s.boxType !== 'none'){
+    const d = r.price - altPrice({lam:'matte'}, r.Q);
+    if (d > 0) pts.push(['save','降本方案', `觸感膜改霧膜，外觀接近、每盒省 NT$${fmt(d)}。`]);
+  }
+  if (s.inner === 'glass_bottle'){
+    const d = r.price - altPrice({inner:'pe_bottle'}, r.Q);
+    if (d > 0) pts.push(['save','降本方案', `玻璃瓶改 HDPE 瓶每盒省 NT$${fmt(d)}，運送破損風險也較低。`]);
+  }
+
+  // 通路
+  const lo = Math.round(r.price * 3 / 10) * 10, hi = Math.round(r.price * 5 / 10) * 10;
+  pts.push(['price','價格策略', `通路定價參考：零售價常抓代工價 3–5 倍，此方案建議售價約 NT$${fmt(lo)}–${fmt(hi)}，可協助客戶試算毛利。`]);
+
+  // 交期與風險
+  pts.push(['risk','交期風險', `交期約 ${leadDays(s)} 個工作天（配方確認、原料與包材到廠後起算）。包材打樣約 5–7 個工作天，請客戶儘早定稿。`]);
+  if (a.units < f.moq) pts.push(['risk','交期風險', `方案 A 低於${f.name}建議批量 ${fmt(f.moq)} ${f.unit}，可建議客戶至少選方案 B，或與其他品項併線生產。`]);
+  if (f.maxFill && a.fill > f.maxFill) pts.push(['risk','交期風險', `每${f.unit}重量超過${f.name}容量，需調整為每次 2 ${f.unit}或改劑型，配方確認前先與研發確認。`]);
+  const has = id => s.formula.some(x => x.id === id);
+  if (has('probiotic')) pts.push(['risk','原料提醒', '益生菌怕熱怕潮：製程需控溫控濕，包材需防潮，並說明保存條件與菌數保證期限。']);
+  if (has('redyeast')) pts.push(['law','法規提醒', '紅麴原料須檢附橘黴素檢驗報告，並確認符合衛福部紅麴製品相關規範。']);
+  if (has('fishoil') && s.form !== 'softgel') pts.push(['risk','原料提醒', '魚油為液態原料，建議改用軟膠囊劑型。']);
+
+  // 法規
+  pts.push(['law','法規提醒', '以一般食品販售時，包裝與廣告不得宣稱醫療效能；若要使用「健康食品」字樣，須另向衛福部申請健康食品認證（小綠人標章）。']);
+  pts.push(['law','法規提醒', '外盒與標籤需有品名、內容物、淨重或數量、營養標示、過敏原、原產地、有效日期及廠商資訊等法定標示，請客戶設計稿預留版面。']);
+  if (s.margin < 18) pts.push(['risk','議價空間', `目標毛利率僅 ${s.margin}%，客戶若再議價建議以加量或調整工藝換取，避免直接降價。`]);
+  return pts;
+}
+
+function renderInternal(R, rec){
+  const pts = buildPoints(R, rec);
+  $('#points').innerHTML = pts.map(([cls, tag, txt], i) =>
+    `<li style="--i:${i}"><span class="ptag ${cls}">${tag}</span><span>${txt}</span></li>`).join('');
+  $('#points')._pts = pts;
+
+  const row = (name, fn, sw, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td>${sw ? `<i class="sw" style="background:var(--${sw})"></i>` : ''}${name}</td>${R.map(r => `<td>${fn(r)}</td>`).join('')}</tr>`;
+  $('#costTable').innerHTML =
+    `<thead><tr><th>項目</th>${R.map((r,i) => `<th>${LET[i]}・${fmt(r.Q)}</th>`).join('')}</tr></thead><tbody>` +
+    SEG.map(sg => row(sg.name, r => fmt1(r[sg.key]), sg.c)).join('') +
+    row('成本合計', r => fmt1(r.cost), null, 'sum') +
+    row(`報價（毛利 ${state.margin}%）`, r => fmt(r.price)) +
+    row('每盒毛利', r => fmt1(r.price - r.cost)) +
+    row('翻單價', r => fmt(r.reorderPrice)) +
+    '</tbody>';
+}
+
+function summaryText(R, rec){
+  const s = state, f = FORMS[s.form];
+  const spec = specRows(R).map(([k,v]) => `${k}：${v.replace(/<[^>]+>/g, '').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")}`);
+  return [
+    `【報價摘要】${s.product}`,
+    `${s.client} ${s.contact} 您好，以下為本次報價（未稅，新台幣）：`,
+    '',
+    ...spec.slice(1),
+    '',
+    ...R.map((r,i) => `方案 ${LET[i]}｜${fmt(r.Q)} 盒｜每盒 NT$${fmt(r.price)}（每${f.unit} NT$${fmt2(r.perUnit)}）｜含稅 NT$${fmt(r.grand)}${i === rec ? '　★建議' : ''}`),
+    '',
+    `交期：原料與包材到廠後約 ${leadDays(s)} 個工作天`,
+    `報價單號 ${quoteNo}，有效期限至 ${ymd(validDate)}`,
+    `${s.ourCompany} ${s.salesRep}`,
+  ].join('\n');
+}
+
+/* ---------------- 主更新 ---------------- */
+let lastR = [], lastRec = 0;
+function update(){
+  lastR = computeAll(state);
+  lastRec = pickRec(lastR);
+  renderCalcSide(lastR, lastRec);
+  renderQuote(lastR, lastRec);
+  renderInternal(lastR, lastRec);
+}
+
+/* ---------------- 計時器 ---------------- */
+let t0 = Date.now(), tDone = null;
+const secs = () => Math.floor(((tDone || Date.now()) - t0) / 1000);
+const mmss = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
+function tick(){ $('#timerVal').textContent = mmss(secs()); }
+function restartTimer(){
+  t0 = Date.now(); tDone = null;
+  $('#timer').classList.remove('done'); $('#timerLbl').textContent = '本次報價耗時';
+  $('#doneNote').textContent = '修改規格請回「報價試算」，報價單會同步更新。';
+  tick();
+}
+setInterval(tick, 1000);
+
+/* ---------------- 分頁 ---------------- */
+function selectTab(name){
+  document.querySelectorAll('.tabs [role="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+  ['calc','quote','db'].forEach(k => { $('#p-' + k).hidden = k !== name; });
+  if (name === 'quote'){ const p = $('#points'); p.innerHTML = p.innerHTML; }  // 重播溝通重點進場
+}
+document.querySelector('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('[role="tab"]'); if (b) selectTab(b.dataset.tab);
+});
+
+$('#genBtn').addEventListener('click', () => {
+  if (!tDone){
+    tDone = Date.now();
+    const n = secs();
+    $('#timer').classList.add('done'); $('#timerLbl').textContent = '報價完成';
+    $('#doneNote').innerHTML = `本次報價耗時 <b>${mmss(n)}</b>，比人工比對約 40 分鐘縮短 <b>${Math.max(0, Math.round((1 - n / 2400) * 100))}%</b>。`;
+  }
+  tick();
+  selectTab('quote');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+/* ---------------- 複製／列印 ---------------- */
+function flash(btn, msg){
+  const old = btn.dataset.label || btn.textContent; btn.dataset.label = old;
+  btn.textContent = msg; setTimeout(() => { btn.textContent = old; }, 1600);
+}
+function copyText(text, btn){
+  const fallback = () => { const ta = $('#copyFallback'); ta.hidden = false; ta.value = text; ta.focus(); ta.select(); flash(btn, '已選取，請按 Ctrl+C'); };
+  try {
+    navigator.clipboard.writeText(text).then(() => { $('#copyFallback').hidden = true; flash(btn, '已複製'); }, fallback);
+  } catch (e) { fallback(); }
+}
+$('#copySum').addEventListener('click', e => copyText(summaryText(lastR, lastRec), e.currentTarget));
+$('#copyPts').addEventListener('click', e => copyText(
+  `【${state.product}】業務溝通重點\n` + ($('#points')._pts || []).map(([, tag, txt], i) => `${i + 1}. [${tag}] ${txt.replace(/<[^>]+>/g, '')}`).join('\n'),
+  e.currentTarget));
+let framed = true;
+try { framed = window.self !== window.top; } catch (e) { framed = true; }
+if (!framed){ $('#printBtn').hidden = false; $('#printBtn').addEventListener('click', () => window.print()); }
+
+/* ---------------- 資料庫分頁 ---------------- */
+function renderDB(){
+  const cats = [...new Set(MATERIALS.map(m => m.cat))];
+  $('#dbCat').innerHTML = `<option value="">全部分類</option>` + cats.map(c => `<option>${c}</option>`).join('');
+  $('#matTable').innerHTML = `<thead><tr><th>原料</th><th>分類</th><th>產地</th><th class="n">單價（NT$／kg）</th><th class="n">常用劑量</th><th class="n">每 mg 成本</th><th>備註</th></tr></thead>
+    <tbody>${MATERIALS.map(m => `<tr data-id="${m.id}" data-cat="${m.cat}">
+      <td>${esc(m.name)}</td><td class="cat">${m.cat}</td><td>${m.origin}</td>
+      <td class="n"><input type="number" min="0" step="10" id="price-${m.id}" value="${m.price}" aria-label="${esc(m.name)} 單價"></td>
+      <td class="n">${m.dose ? fmt(m.dose) + ' mg' : '自動補足'}</td>
+      <td class="n" id="permg-${m.id}">${(m.price / 1e6).toFixed(4)}</td>
+      <td class="muted">${esc(m.note)}</td></tr>`).join('')}</tbody>`;
+  filterDB();
+
+  const tbl = (head, rows) => `<div class="tbl-wrap"><table class="dbt"><thead><tr>${head.map(h => `<th${h.n ? ' class="n"' : ''}>${h.t || h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c,i) => `<td${head[i].n ? ' class="n"' : ''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const N = t => ({t, n:true});
+  const cards = [
+    ['劑型代工費率', '每單位', tbl(['劑型', N('代工費'), N('膠殼／包材'), N('開機清線'), N('最小批量'), N('交期')],
+      Object.values(FORMS).map(f => [f.name, fmt2(f.fee), fmt2(f.shell + f.pack + f.base), fmt(f.setup), `${fmt(f.moq)} ${f.unit}`, `${f.lead[0]}–${f.lead[1]} 天`]))],
+    ['代工量階梯', '依總單位數', tbl(['總生產量', N('代工費係數')], MFG_TIERS.map(t => [t.label, '× ' + t.f.toFixed(2)]))],
+    ['內包材', 'NT$', tbl(['項目', N('單價')], Object.entries(INNER).filter(([k]) => k !== 'none').map(([, x]) => [x.name, x.perUnit ? `${fmt2(x.perUnit)}／粒` : `${fmt1(x.perBox)}／盒`]))],
+    ['外盒盒型', '小尺寸、白卡紙基準', tbl(['盒型', N('基礎單價'), N('刀模費'), N('交期加計')],
+      Object.values(BOX).filter(b => b.base).map(b => [b.name, fmt1(b.base), fmt(b.die), b.extraLead ? `+${b.extraLead} 天` : '—']))],
+    ['紙材與尺寸係數', '乘於盒型單價', tbl(['項目', N('係數')], [...Object.values(PAPER).map(p => [p.name, '× ' + p.f.toFixed(2)]), ...Object.values(SIZE).map(z => [`尺寸 ${z.name}`, '× ' + z.f.toFixed(2)])])],
+    ['印刷與表面處理', `印刷版每色 NT$${fmt(PLATE)}、開機 NT$${fmt(PRINT_SETUP)}`, tbl(['項目', N('每盒單價'), N('版數')],
+      [...Object.values(PRINT).map(p => [p.name, fmt2(p.v), p.plates]), ...Object.values(LAM).filter(l => l.v).map(l => [l.name, fmt2(l.v), '—'])])],
+    ['特殊工藝', '每盒單價＋一次性版費', tbl(['工藝', N('每盒'), N('版費')], Object.values(SPECIAL).map(x => [x.name, fmt2(x.v), x.setup ? fmt(x.setup) : '—']))],
+    ['標籤', '每張單價＋刀模版費', tbl(['材質', N('每張'), N('版費')], Object.values(LABEL).filter(l => l.v).map(l => [l.name, fmt2(l.v), fmt(l.setup)]))],
+    ['印刷數量階梯', '外盒與標籤共用', tbl(['訂購量', N('單價係數')], PRINT_TIERS.map(t => [t.label, '× ' + t.f.toFixed(2)]))],
+    ['品質檢驗', '每批一次性', tbl(['項目', N('費用')], Object.values(TEST).filter(t => t.v).map(t => [t.name, fmt(t.v)]))],
+    ['包裝工資', '每盒', tbl(['項目', N('單價')], [['充填裝瓶、入盒、封膜', fmt2(LABOR.base)], ['貼標', fmt2(LABOR.label)], ['外箱與裝箱', fmt2(LABOR.carton)]])],
+  ];
+  $('#dbGrid').innerHTML = cards.map(([t, sub, body]) => `<div class="db-card"><h3>${t}<small>${sub}</small></h3>${body}</div>`).join('');
+}
+function filterDB(){
+  const q = $('#dbSearch').value.trim().toLowerCase(), c = $('#dbCat').value;
+  let n = 0;
+  document.querySelectorAll('#matTable tbody tr').forEach(tr => {
+    const m = MAT[tr.dataset.id];
+    const show = (!c || m.cat === c) && (!q || m.name.toLowerCase().includes(q));
+    tr.hidden = !show; if (show) n++;
+  });
+  $('#dbCount').textContent = `顯示 ${n}／${MATERIALS.length} 項`;
+}
+function markEdited(id){
+  const tr = document.querySelector(`#matTable tr[data-id="${id}"]`);
+  if (tr) tr.classList.toggle('edited', MAT[id].price !== DEFAULT_PRICE[id]);
+  $('#permg-' + id).textContent = (MAT[id].price / 1e6).toFixed(4);
+}
+$('#dbSearch').addEventListener('input', filterDB);
+$('#dbCat').addEventListener('change', filterDB);
+$('#matTable').addEventListener('input', e => {
+  const id = e.target.id.replace('price-', ''); if (!MAT[id]) return;
+  MAT[id].price = Math.max(0, parseFloat(e.target.value) || 0);
+  markEdited(id); update();
+});
+$('#dbReset').addEventListener('click', () => {
+  MATERIALS.forEach(m => { m.price = DEFAULT_PRICE[m.id]; $('#price-' + m.id).value = m.price; markEdited(m.id); });
+  update();
+});
+
+/* ---------------- 啟動 ---------------- */
+buildStatic();
+bindForm();
+bindChart();
+renderDB();
+loadPreset('lutein');
+tick();
+const h = location.hash.replace('#', '');
+if (['calc','quote','db'].includes(h)) selectTab(h);
+})();
+</script>
+</body>
+</html>
